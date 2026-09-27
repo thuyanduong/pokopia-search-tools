@@ -4,7 +4,7 @@ import pokemon from "../data/pokemon.json";
 import items from "../data/items.json";
 import { Autocomplete, PageTitle } from "../components.jsx";
 
-function TenantSearch() {
+function MoveInMatch() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [search, setSearch] = useState("");
@@ -122,7 +122,7 @@ function TenantSearch() {
           </>
         }
       >
-        Select Furniture for Your House
+        Move-In Match
       </PageTitle>
       <div className="pokemon-autocomplete">
         <Autocomplete
@@ -145,9 +145,9 @@ function TenantSearch() {
       </div>
 
       {selectedItems.length > 0 && (
-        <div className="tenant-items">
+        <div className="house-items">
           {selectedItems.map((item) => (
-            <div className="card tenant-item-card" key={item._id}>
+            <div className="card house-item-card" key={item._id}>
               <button
                 className="clear-button clear-button-card"
                 type="button"
@@ -159,7 +159,7 @@ function TenantSearch() {
               <img src={item.imageURL} alt={item.name} />
 
               <p>{item.name}</p>
-              {item.tag && <p className="tenant-item-card-tag">{item.tag}</p>}
+              {item.tag && <p className="house-item-card-tag">{item.tag}</p>}
             </div>
           ))}
         </div>
@@ -174,9 +174,9 @@ function TenantSearch() {
       {selectedItems.length > 0 && (
         <>
           <div className="table-count">
-            Showing {pokemonResults.length} potential tenants
+            Showing {pokemonResults.length} potential residents
           </div>
-          <table className="data-table tenant-results-table">
+          <table className="data-table match-results-table">
             <thead>
               <tr>
                 <th>Image</th>
@@ -221,4 +221,4 @@ function TenantSearch() {
   );
 }
 
-export default TenantSearch;
+export default MoveInMatch;

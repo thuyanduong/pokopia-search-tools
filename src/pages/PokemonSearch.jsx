@@ -1,78 +1,144 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import pokemon from "../data/pokemon.json";
+import specialties from "../data/pokemonSpecialties.json";
+import favorites from "../data/pokemonFavorites.json";
+import idealHabitats from "../data/pokemonIdealHabitats.json";
 import {
   Autocomplete,
   FavoriteCells,
-  Help,
+  FilterChips,
+  MatchModeToggle,
   PageTitle,
   SearchLink,
   SpecialtyCells,
 } from "../components.jsx";
 
-function SearchOption({ label, paramName, checked, onChange }) {
-  return (
-    <label>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(paramName, event.target.checked)}
-      />
-      {label}
-    </label>
-  );
+const FAVORITE_LIMIT = 6;
+
+function readListParam(searchParams, paramName) {
+  return searchParams.get(paramName)?.split(",").filter(Boolean) || [];
 }
 
 function PokemonSearch() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [search, setSearch] = useState(searchParams.get("pokemon") || "");
+  const selectedSpecialties = readListParam(searchParams, "specialties");
+  const specialtyMatch = searchParams.get("specialtyMatch") || "OR";
+  const [specialtySearch, setSpecialtySearch] = useState("");
+  const [specialtySearchActive, setSpecialtySearchActive] = useState(false);
 
-  const selectedPokemonName = searchParams.get("pokemon");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const selectedPokemon = pokemon.find(
-    (p) => p.name.toLowerCase() === selectedPokemonName?.toLowerCase(),
-  );
+  const selectedFavorites = readListParam(searchParams, "favorites");
+  const favoriteMatch = searchParams.get("favoriteMatch") || "OR";
+  const [favoriteSearch, setFavoriteSearch] = useState("");
+  const [favoriteSearchActive, setFavoriteSearchActive] = useState(false);
 
-  const considerFlavor = searchParams.get("considerFlavor") === "true";
+  const selectedHabitats = readListParam(searchParams, "habitats");
+  const [habitatSearch, setHabitatSearch] = useState("");
+  const [habitatSearchActive, setHabitatSearchActive] = useState(false);
 
-  const showConflictingHabitats =
-    searchParams.get("showConflictingHabitats") === "true";
+  const underwater = searchParams.get("underwater") || "all";
 
-  const onlyShowUnderwater = searchParams.get("onlyShowUnderwater") === "true";
-
-  const favoriteLimit = considerFlavor ? 6 : 5;
-
-  const matches = pokemon.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  function handleSelect(selected) {
-    setSearch(selected.name);
-
-    setSearchParams((params) => {
-      params.set("pokemon", selected.name);
-      return params;
-    });
+  function matchesIgnoreCase(value1, value2) {
+    return value1.toLowerCase() === value2.toLowerCase();
   }
+
+  const filteredPokemon = pokemon.filter((p) => {
+    if (selectedSpecialties.length > 0) {
+      if (specialtyMatch === "AND") {
+        if (
+          !selectedSpecialties.every((specialty) =>
+            p.specialties.some((value) => matchesIgnoreCase(value, specialty)),
+          )
+        ) {
+          return false;
+        }
+      } else {
+        if (
+          !selectedSpecialties.some((specialty) =>
+            p.specialties.some((value) => matchesIgnoreCase(value, specialty)),
+          )
+        ) {
+          return false;
+        }
+      }
+    }
+
+    if (selectedFavorites.length > 0) {
+      if (favoriteMatch === "AND") {
+        if (
+          !selectedFavorites.every((favorite) =>
+            p.favorites.some((value) => matchesIgnoreCase(value, favorite)),
+          )
+        ) {
+          return false;
+        }
+      } else {
+        if (
+          !selectedFavorites.some((favorite) =>
+            p.favorites.some((value) => matchesIgnoreCase(value, favorite)),
+          )
+        ) {
+          return false;
+        }
+      }
+    }
+
+    if (
+      selectedHabitats.length > 0 &&
+      !selectedHabitats.some((habitat) =>
+        matchesIgnoreCase(habitat, p.idealHabitat),
+      )
+    ) {
+      return false;
+    }
+
+    if (underwater === "yes" && !p.canGoUnderwater) {
+      return false;
+    }
+
+    if (underwater === "no" && p.canGoUnderwater) {
+      return false;
+    }
+
+    return true;
+  });
 
   function resetSearch() {
-    setSearch("");
+    setSearchParams({});
+  }
 
+  function setParam(paramName, value, emptyValue) {
     setSearchParams((params) => {
-      params.delete("pokemon");
-      params.delete("considerFlavor");
-      params.delete("showConflictingHabitats");
-      params.delete("onlyShowUnderwater");
+      if (value === emptyValue) {
+        params.delete(paramName);
+      } else {
+        params.set(paramName, value);
+      }
 
       return params;
     });
   }
 
-  function setFlag(paramName, value) {
+  function addFilter(paramName, value) {
     setSearchParams((params) => {
-      if (value) {
-        params.set(paramName, "true");
+      const current = readListParam(params, paramName);
+
+      current.push(value);
+      params.set(paramName, current.join(","));
+
+      return params;
+    });
+  }
+
+  function removeFilter(paramName, value) {
+    setSearchParams((params) => {
+      const updated = readListParam(params, paramName).filter(
+        (item) => !matchesIgnoreCase(item, value),
+      );
+
+      if (updated.length > 0) {
+        params.set(paramName, updated.join(","));
       } else {
         params.delete(paramName);
       }
@@ -81,258 +147,201 @@ function PokemonSearch() {
     });
   }
 
-  function getCommonFavorites(selected, candidate) {
-    return candidate.favorites
-      .slice(0, favoriteLimit)
-      .filter((favorite) =>
-        selected.favorites
-          .slice(0, favoriteLimit)
-          .some(
-            (selectedFavorite) =>
-              selectedFavorite.toLowerCase() === favorite.toLowerCase(),
-          ),
-      ).length;
-  }
-
-  function getHabitatPriority(selectedHabitat, candidateHabitat) {
-    const selected = selectedHabitat.toLowerCase();
-    const candidate = candidateHabitat.toLowerCase();
-
-    const conflicts = {
-      dry: "humid",
-      humid: "dry",
-      warm: "cool",
-      cool: "warm",
-      bright: "dark",
-      dark: "bright",
-    };
-
-    if (selected === candidate) {
-      return 0;
-    }
-
-    if (conflicts[selected] === candidate) {
-      return 2;
-    }
-
-    return 1;
-  }
-
-  const potentialRoommates = selectedPokemon
-    ? pokemon
-        .filter((p) => p._id !== selectedPokemon._id)
-        .map((p) => ({
-          pokemon: p,
-          commonFavorites: getCommonFavorites(selectedPokemon, p),
-          habitatPriority: getHabitatPriority(
-            selectedPokemon.idealHabitat,
-            p.idealHabitat,
-          ),
-        }))
-        .filter(
-          (p) =>
-            p.commonFavorites >= 1 &&
-            (showConflictingHabitats || p.habitatPriority !== 2) &&
-            (!onlyShowUnderwater || p.pokemon.canGoUnderwater),
-        )
-        .sort((a, b) => {
-          if (b.commonFavorites !== a.commonFavorites) {
-            return b.commonFavorites - a.commonFavorites;
-          }
-
-          if (a.habitatPriority !== b.habitatPriority) {
-            return a.habitatPriority - b.habitatPriority;
-          }
-
-          return 0;
-        })
-    : [];
-
   return (
     <div>
-      <div className="pokemon-search text-center">
-        <PageTitle
-          help={
+      <PageTitle
+        help={
+          <>
             <p>
               <strong>How to use: </strong>
-              Search for a pokémon by name and select it from the dropdown to
-              view its stats. You’ll also see potential roommates based on
-              shared favorites and ideal habitat. A potential roommate is a
-              pokémon that shares at least one favorite category with the
-              selected pokémon.
+              Use the filters to narrow down the list of pokémon by their
+              specialties, ideal habitat, favorites, or ability to go
+              underwater.
             </p>
-          }
-        >
-          Pokémon Compatibility
-        </PageTitle>
-        <Autocomplete
-          className="pokemon-autocomplete"
-          inputClassName="pokemon-autocomplete-input"
-          placeholder="Type a Pokémon's name..."
-          value={search}
-          onFocus={() => setIsSearchFocused(true)}
-          onBlur={() => setIsSearchFocused(false)}
-          onChange={(event) => {
-            setSearch(event.target.value);
 
-            setSearchParams((params) => {
-              params.delete("pokemon");
-              return params;
-            });
-          }}
-          isOpen={isSearchFocused && !selectedPokemon && matches.length > 0}
-          options={matches}
-          getKey={(p) => p._id}
-          renderOption={(p) => (
-            <>
-              <img src={p.imageURL} alt="" />
-              <span>{p.name}</span>
-            </>
+            <p>
+              <strong>Specialties:</strong> Filter by one or more pokémon
+              specialties.
+            </p>
+
+            <p>
+              <strong>Ideal Habitat:</strong> Filter by one or more ideal
+              habitats.
+            </p>
+
+            <p>
+              <strong>Favorites:</strong> Filter by one or more favorite
+              preferences.
+            </p>
+
+            <p>
+              <strong>Underwater:</strong> Filter by whether pokémon can go
+              underwater.
+            </p>
+
+            <p>
+              <strong>Selecting OR / AND:</strong> When multiple values are
+              selected, choose whether pokémon must match all selected values
+              (AND) or at least one selected value (OR).
+            </p>
+          </>
+        }
+      >
+        Pokémon Search
+      </PageTitle>
+      <div className="four-section-search">
+        <div className="four-search-section">
+          <h2 className="text-center">Specialties</h2>
+
+          <Autocomplete
+            className="four-section-search-bar"
+            placeholder="Search specialties..."
+            value={specialtySearch}
+            onChange={(event) => setSpecialtySearch(event.target.value)}
+            onFocus={() => setSpecialtySearchActive(true)}
+            onBlur={() => setSpecialtySearchActive(false)}
+            isOpen={specialtySearchActive}
+            options={specialties
+              .filter((specialty) =>
+                specialty.name
+                  .toLowerCase()
+                  .includes(specialtySearch.toLowerCase()),
+              )
+              .filter(
+                (specialty) =>
+                  !selectedSpecialties.some((selected) =>
+                    matchesIgnoreCase(selected, specialty.name),
+                  ),
+              )}
+            getKey={(specialty) => specialty.name}
+            onSelect={(specialty) => {
+              addFilter("specialties", specialty.name);
+              setSpecialtySearch("");
+            }}
+          />
+
+          <FilterChips
+            values={selectedSpecialties}
+            onRemove={(specialty) => removeFilter("specialties", specialty)}
+          />
+
+          {selectedSpecialties.length > 1 && (
+            <MatchModeToggle
+              groupName="specialtyMatch"
+              value={specialtyMatch}
+              onChange={(value) => setParam("specialtyMatch", value, "OR")}
+            />
           )}
-          onSelect={handleSelect}
-          keepFocus
-        />
+        </div>
+
+        <div className="four-search-section">
+          <h2 className="text-center">Ideal Habitat</h2>
+
+          <Autocomplete
+            className="four-section-search-bar"
+            placeholder="Search habitats..."
+            value={habitatSearch}
+            onChange={(event) => setHabitatSearch(event.target.value)}
+            onFocus={() => setHabitatSearchActive(true)}
+            onBlur={() => setHabitatSearchActive(false)}
+            isOpen={habitatSearchActive}
+            options={idealHabitats
+              .filter((habitat) =>
+                habitat.name.toLowerCase().includes(habitatSearch.toLowerCase()),
+              )
+              .filter(
+                (habitat) =>
+                  !selectedHabitats.some((selected) =>
+                    matchesIgnoreCase(selected, habitat.name),
+                  ),
+              )}
+            getKey={(habitat) => habitat.name}
+            onSelect={(habitat) => {
+              addFilter("habitats", habitat.name);
+              setHabitatSearch("");
+            }}
+          />
+
+          <FilterChips
+            values={selectedHabitats}
+            onRemove={(habitat) => removeFilter("habitats", habitat)}
+          />
+
+          {selectedHabitats.length > 1 && <MatchModeToggle readOnly />}
+        </div>
+
+        <div className="four-search-section">
+          <h2 className="text-center">Favorites</h2>
+
+          <Autocomplete
+            className="four-section-search-bar"
+            placeholder="Search favorites..."
+            value={favoriteSearch}
+            onChange={(event) => setFavoriteSearch(event.target.value)}
+            onFocus={() => setFavoriteSearchActive(true)}
+            onBlur={() => setFavoriteSearchActive(false)}
+            isOpen={favoriteSearchActive}
+            options={favorites
+              .filter((favorite) =>
+                favorite.name
+                  .toLowerCase()
+                  .includes(favoriteSearch.toLowerCase()),
+              )
+              .filter(
+                (favorite) =>
+                  !selectedFavorites.some((selected) =>
+                    matchesIgnoreCase(selected, favorite.name),
+                  ),
+              )}
+            getKey={(favorite) => favorite.name}
+            onSelect={(favorite) => {
+              addFilter("favorites", favorite.name);
+              setFavoriteSearch("");
+            }}
+          />
+
+          <FilterChips
+            values={selectedFavorites}
+            onRemove={(favorite) => removeFilter("favorites", favorite)}
+          />
+
+          {selectedFavorites.length > 1 && (
+            <MatchModeToggle
+              groupName="favoriteMatch"
+              value={favoriteMatch}
+              onChange={(value) => setParam("favoriteMatch", value, "OR")}
+            />
+          )}
+        </div>
+
+        <div className="four-search-section">
+          <h2 className="text-center">Underwater</h2>
+
+          <select
+            className="search-input"
+            value={underwater}
+            onChange={(event) =>
+              setParam("underwater", event.target.value, "all")
+            }
+          >
+            <option value="all">All Pokémon</option>
+            <option value="yes">Underwater only</option>
+            <option value="no">No underwater</option>
+          </select>
+        </div>
       </div>
 
-      {selectedPokemon && (
+      {searchParams.toString() && (
         <button className="reset-button" onClick={resetSearch}>
           Reset Search
         </button>
       )}
 
-      {selectedPokemon && (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Specialties</th>
-              <th>Ideal Habitat</th>
-              <th colSpan={favoriteLimit}>
-                <div className="title">
-                  <span>Favorites</span>
-                  <Help>
-                    This table will link to items in this favorite category.
-                  </Help>
-                </div>
-              </th>
-              <th>Can Go Underwater</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td>
-                <img
-                  src={selectedPokemon.imageURL}
-                  alt={selectedPokemon.name}
-                  width="100"
-                />
-              </td>
-              <td>
-                <SearchLink
-                  path="/pokemon"
-                  params={{ pokemon: selectedPokemon.name }}
-                >
-                  {selectedPokemon.name}
-                </SearchLink>
-              </td>
-              <td>
-                <SpecialtyCells specialties={selectedPokemon.specialties} />
-              </td>
-              <td>
-                <SearchLink
-                  path="/pokemonAdvanced"
-                  params={{ habitats: selectedPokemon.idealHabitat }}
-                >
-                  {selectedPokemon.idealHabitat}
-                </SearchLink>
-              </td>
-              <FavoriteCells
-                path="/items"
-                favorites={selectedPokemon.favorites}
-                limit={favoriteLimit}
-              />
-              <td
-                className={
-                  onlyShowUnderwater && !selectedPokemon.canGoUnderwater
-                    ? "highlight-red"
-                    : ""
-                }
-              >
-                <SearchLink
-                  path="/pokemonAdvanced"
-                  params={{ underwater: selectedPokemon.canGoUnderwater }}
-                >
-                  {selectedPokemon.canGoUnderwater ? "Yes" : "No"}
-                </SearchLink>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      )}
-
-      {selectedPokemon && potentialRoommates.length > 0 && (
-        <div className="potential-roommates">
-          <PageTitle
-            className="potential-roommates-title"
-            help={
-              <>
-                <p>
-                  <strong>How to use: </strong>Roommates are ordered by the
-                  number of shared favorites, with those sharing more favorites
-                  appearing higher on the list. Among pokémon with the same
-                  number of shared favorites, priority is given to those with
-                  the same ideal habitat. Shared favorites and matching ideal
-                  habitats are highlighted in green.
-                </p>
-                <p>
-                  <strong>Consider favorite flavor:</strong> Includes favorite
-                  flavor when comparing pokémon for potential roommates.
-                </p>
-
-                <p>
-                  <strong>Show conflicting habitats:</strong> Includes pokémon
-                  whose ideal habitat directly conflicts with the selected
-                  pokémon.
-                </p>
-
-                <p>
-                  <strong>Only show underwater pokémon:</strong> Shows only
-                  potential roommates that can go underwater.
-                </p>
-              </>
-            }
-          >
-            Potential Roommates
-          </PageTitle>
-          <div className="pokemon-search-options">
-            <SearchOption
-              label="Consider favorite flavor"
-              paramName="considerFlavor"
-              checked={considerFlavor}
-              onChange={setFlag}
-            />
-
-            <SearchOption
-              label="Show conflicting habitats"
-              paramName="showConflictingHabitats"
-              checked={showConflictingHabitats}
-              onChange={setFlag}
-            />
-
-            <SearchOption
-              label="Only show underwater pokémon"
-              paramName="onlyShowUnderwater"
-              checked={onlyShowUnderwater}
-              onChange={setFlag}
-            />
-          </div>
-
-          <div className="table-count">
-            Showing {potentialRoommates.length} potential roommates
-          </div>
-
+      <div className="search-results">
+        <div className="table-count">
+          {filteredPokemon.length} Pokémon found
+        </div>
+        {filteredPokemon.length > 0 && (
           <table className="data-table">
             <thead>
               <tr>
@@ -340,83 +349,52 @@ function PokemonSearch() {
                 <th>Name</th>
                 <th>Specialties</th>
                 <th>Ideal Habitat</th>
-                <th colSpan={favoriteLimit}>
-                  <div className="title">
-                    <span>Favorites</span>
-                    <Help>
-                      This table will link to Pokémon that have this favorite
-                      category.
-                    </Help>
-                  </div>
-                </th>
+                <th colSpan={FAVORITE_LIMIT}>Favorites</th>
                 <th>Can Go Underwater</th>
               </tr>
             </thead>
 
             <tbody>
-              {potentialRoommates.map(({ pokemon: roommate }) => (
-                <tr key={roommate._id}>
+              {filteredPokemon.map((p) => (
+                <tr key={p.name}>
                   <td>
-                    <img
-                      src={roommate.imageURL}
-                      alt={roommate.name}
-                      width="100"
-                    />
+                    <img src={p.imageURL} alt={p.name} width="100" />
                   </td>
                   <td>
-                    <SearchLink
-                      path="/pokemon"
-                      params={{ pokemon: roommate.name }}
-                    >
-                      {roommate.name}
+                    <SearchLink path="/roommate-finder" params={{ pokemon: p.name }}>
+                      {p.name}
                     </SearchLink>
                   </td>
                   <td>
-                    <SpecialtyCells specialties={roommate.specialties} />
+                    <SpecialtyCells specialties={p.specialties} />
                   </td>
-                  <td
-                    className={
-                      roommate.idealHabitat.toLowerCase() ===
-                      selectedPokemon.idealHabitat.toLowerCase()
-                        ? "highlight-green"
-                        : getHabitatPriority(
-                              selectedPokemon.idealHabitat,
-                              roommate.idealHabitat,
-                            ) === 2
-                          ? "highlight-red"
-                          : ""
-                    }
-                  >
+                  <td>
                     <SearchLink
-                      path="/pokemonAdvanced"
-                      params={{ habitats: roommate.idealHabitat }}
+                      path="/pokemon-search"
+                      params={{ habitats: p.idealHabitat }}
                     >
-                      {roommate.idealHabitat}
+                      {p.idealHabitat}
                     </SearchLink>
                   </td>
                   <FavoriteCells
-                    path="/pokemonAdvanced"
-                    favorites={roommate.favorites}
-                    limit={favoriteLimit}
-                    highlights={selectedPokemon.favorites.slice(
-                      0,
-                      favoriteLimit,
-                    )}
+                    path="/pokemon-search"
+                    favorites={p.favorites}
+                    limit={FAVORITE_LIMIT}
                   />
                   <td>
                     <SearchLink
-                      path="/pokemonAdvanced"
-                      params={{ underwater: roommate.canGoUnderwater }}
+                      path="/pokemon-search"
+                      params={{ underwater: p.canGoUnderwater }}
                     >
-                      {roommate.canGoUnderwater ? "Yes" : "No"}
+                      {p.canGoUnderwater ? "Yes" : "No"}
                     </SearchLink>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

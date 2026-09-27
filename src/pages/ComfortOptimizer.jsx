@@ -34,7 +34,7 @@ function getSearchesFromParams(searchParams) {
   );
 }
 
-function RoommatePlanner() {
+function ComfortOptimizer() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedPokemon, setSelectedPokemon] = useState(() =>
@@ -410,4 +410,4 @@ function RoommatePlanner() {
   );
 }
 
-export default RoommatePlanner;
+export default ComfortOptimizer;

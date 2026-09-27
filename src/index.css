@@ -465,7 +465,7 @@ body {
 }
 
 /* ================================
-   Pokémon Compatibility
+   Roommate Finder
    ================================ */
 
 .pokemon-autocomplete {
@@ -549,10 +549,10 @@ body {
 }
 
 /* ================================
-   Tenant Search
+   Move-In Match
    ================================ */
 
-.tenant-items {
+.house-items {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -560,12 +560,12 @@ body {
   margin: 24px auto;
 }
 
-.tenant-item-card {
+.house-item-card {
   width: 160px;
   padding: 12px;
 }
 
-.tenant-item-card img {
+.house-item-card img {
   display: block;
   width: 75px;
   height: 75px;
@@ -573,15 +573,51 @@ body {
   object-fit: contain;
 }
 
-.tenant-item-card p {
+.house-item-card p {
   margin: 0;
   font-weight: 600;
 }
 
-.tenant-item-card p.tenant-item-card-tag {
+.house-item-card p.house-item-card-tag {
   font-weight: normal;
 }
 
-.tenant-results-table td:first-child img {
+.match-results-table td:first-child img {
   margin-bottom: 6px;
+}
+
+/* ================================
+   Toolbox (home)
+   ================================ */
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  max-width: 1100px;
+  margin: 24px auto 0;
+}
+
+.tool-card {
+  display: block;
+  padding: 18px 20px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.tool-card:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-text-icon);
+}
+
+.tool-card-name {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+
+.tool-card-blurb {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.45;
 }

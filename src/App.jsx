@@ -1,17 +1,29 @@
 import {
   BrowserRouter,
   NavLink,
+  Navigate,
   Route,
   Routes,
   useLocation,
   useNavigate,
 } from "react-router-dom";
 import { useEffect } from "react";
+import { SITE_NAME, TOOLS } from "./tools.js";
+import Toolbox from "./pages/Toolbox";
 import PokemonSearch from "./pages/PokemonSearch";
-import PokemonAdvancedSearch from "./pages/PokemonAdvancedSearch";
 import ItemSearch from "./pages/ItemSearch";
-import RoommatePlanner from "./pages/RoommatePlanner";
-import TenantSearch from "./pages/TenantSearch";
+import RoommateFinder from "./pages/RoommateFinder";
+import ComfortOptimizer from "./pages/ComfortOptimizer";
+import MoveInMatch from "./pages/MoveInMatch";
+
+/* The paths the tools lived at before they were renamed. */
+const LEGACY_ROUTES = [
+  { from: "/pokemon", to: "/roommate-finder" },
+  { from: "/pokemonAdvanced", to: "/pokemon-search" },
+  { from: "/items", to: "/item-search" },
+  { from: "/roommate-planner", to: "/comfort-optimizer" },
+  { from: "/tenant", to: "/move-in-match" },
+];
 
 function RememberPage() {
   const location = useLocation();
@@ -43,6 +55,14 @@ function LastUrlLink({ to, children }) {
     </NavLink>
   );
 }
+
+/* Sends an old path, plus whatever query state it carried, to the tool's new path. */
+function LegacyRedirect({ to }) {
+  const location = useLocation();
+
+  return <Navigate to={`${to}${location.search}`} replace />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -50,34 +70,34 @@ function App() {
 
       <nav className="navbar">
         <NavLink className="navbar-brand" to="/">
-          Pokopia Search Tools
+          {SITE_NAME}
         </NavLink>
         <div className="navbar-links">
-          <LastUrlLink to="/pokemon">Pokémon Compatibility</LastUrlLink>
-
-          <LastUrlLink to="/pokemonAdvanced">
-            Pokémon Advanced Search
-          </LastUrlLink>
-
-          <LastUrlLink to="/items">Item Search</LastUrlLink>
-
-          <LastUrlLink to="/roommate-planner">Comfort Optimizer</LastUrlLink>
-
-          <LastUrlLink to="/tenant">Tenant Search</LastUrlLink>
+          {TOOLS.map((tool) => (
+            <LastUrlLink key={tool.path} to={tool.path}>
+              {tool.name}
+            </LastUrlLink>
+          ))}
         </div>
       </nav>
 
       <main className="page-content">
         <div className="page-container">
           <Routes>
-            <Route path="/pokemon" element={<PokemonSearch />} />
-            <Route
-              path="/pokemonAdvanced"
-              element={<PokemonAdvancedSearch />}
-            />
-            <Route path="/items" element={<ItemSearch />} />
-            <Route path="/roommate-planner" element={<RoommatePlanner />} />
-            <Route path="/tenant" element={<TenantSearch />} />
+            <Route path="/" element={<Toolbox />} />
+            <Route path="/pokemon-search" element={<PokemonSearch />} />
+            <Route path="/item-search" element={<ItemSearch />} />
+            <Route path="/roommate-finder" element={<RoommateFinder />} />
+            <Route path="/comfort-optimizer" element={<ComfortOptimizer />} />
+            <Route path="/move-in-match" element={<MoveInMatch />} />
+
+            {LEGACY_ROUTES.map((route) => (
+              <Route
+                key={route.from}
+                path={route.from}
+                element={<LegacyRedirect to={route.to} />}
+              />
+            ))}
           </Routes>
         </div>
       </main>

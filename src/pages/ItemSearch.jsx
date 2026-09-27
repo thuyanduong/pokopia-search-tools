@@ -358,7 +358,7 @@ function ItemSearch() {
         </button>
       )}
 
-      <div className="advanced-search-results">
+      <div className="search-results">
         <div className="table-count">{filteredItems.length} Items found</div>
 
         {filteredItems.length > 0 && (
@@ -381,14 +381,14 @@ function ItemSearch() {
                   </td>
 
                   <td>
-                    <SearchLink path="/items" params={{ name: item.name }}>
+                    <SearchLink path="/item-search" params={{ name: item.name }}>
                       {item.name}
                     </SearchLink>
                   </td>
 
                   <td>
                     <SearchLink
-                      path="/items"
+                      path="/item-search"
                       params={{ categories: item.category }}
                     >
                       {item.category}
@@ -397,7 +397,7 @@ function ItemSearch() {
 
                   <td>
                     {item.tag && (
-                      <SearchLink path="/items" params={{ tags: item.tag }}>
+                      <SearchLink path="/item-search" params={{ tags: item.tag }}>
                         {item.tag}
                       </SearchLink>
                     )}
@@ -408,7 +408,7 @@ function ItemSearch() {
                       {item.favoriteCategories.map((favorite) => (
                         <div key={favorite}>
                           <SearchLink
-                            path="/items"
+                            path="/item-search"
                             params={{ favorites: favorite }}
                           >
                             {favorite}

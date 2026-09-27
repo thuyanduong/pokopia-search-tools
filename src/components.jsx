@@ -81,7 +81,7 @@ export function Autocomplete({
               className="autocomplete-option"
               key={getKey(option)}
               onMouseDown={(event) => {
-                /* Pokémon Compatibility keeps its input focused after a selection. */
+                /* Roommate Finder keeps its input focused after a selection. */
                 if (keepFocus) {
                   event.preventDefault();
                 }
@@ -185,7 +185,7 @@ export function SpecialtyCells({ specialties }) {
       {specialties.map((specialty) => (
         <div key={specialty}>
           <SearchLink
-            path="/pokemonAdvanced"
+            path="/pokemon-search"
             params={{ specialties: specialty }}
           >
             {specialty}
