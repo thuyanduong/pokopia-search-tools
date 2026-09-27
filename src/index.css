@@ -1,0 +1,579 @@
+/* ================================
+   Design tokens
+   ================================ */
+
+:root {
+  --color-text: #222;
+  --color-text-muted: #555;
+  --color-text-faint: #666;
+  --color-text-icon: #888;
+  --color-link: #29476b;
+  --color-link-hover: #58708f;
+  --color-border: #bbb;
+  --color-border-light: #ccc;
+  --color-border-soft: #ddd;
+  --color-surface: #fff;
+  --color-surface-muted: #f5f5f5;
+  --color-surface-hover: #fafafa;
+  --color-surface-chip: #f0f0f0;
+  --color-surface-chip-hover: #d0d0d0;
+  --color-page: #f8f8f8;
+  --color-header: #f5f5f5;
+  --color-header-accent: #e8eef5;
+  --highlight-green: #bfe8bf;
+  --highlight-light-green: #e2f4e2;
+  --highlight-red: #f2bcbc;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-pill: 14px;
+  --shadow-popover: 0 2px 6px rgba(0, 0, 0, 0.15);
+  --z-popover: 10;
+}
+
+/* ================================
+   Base
+   ================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: var(--color-text);
+  background: var(--color-page);
+}
+
+/* ================================
+   Layout
+   ================================ */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 60px;
+  padding: 0 24px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.navbar-brand {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  height: 100%;
+}
+
+.navbar-links a {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  border-bottom: 3px solid transparent;
+}
+
+.navbar-links a:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
+.navbar-links a.active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
+}
+
+.page-content {
+  padding: 32px;
+}
+
+.page-container {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ================================
+   Shared
+   ================================ */
+
+.title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.help {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-text-icon);
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: help;
+}
+
+.help-tooltip {
+  display: none;
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  width: 360px;
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-popover);
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 1.4;
+  text-align: left;
+  transform: translateX(-50%);
+  z-index: var(--z-popover);
+}
+
+.help-tooltip p {
+  margin: 8px 0 0;
+}
+
+.help-tooltip p:first-of-type {
+  margin-top: 4px;
+}
+
+.help:hover .help-tooltip {
+  display: block;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ================================
+   Inputs & autocomplete
+   ================================ */
+
+.search-input {
+  width: 100%;
+  padding: 10px 36px 10px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-text-icon);
+}
+
+.autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  z-index: var(--z-popover);
+}
+
+.autocomplete-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.autocomplete-option img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.autocomplete-option:hover {
+  background: var(--color-surface-muted);
+}
+
+/* ================================
+   Buttons
+   ================================ */
+
+.clear-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-faint);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.clear-button:hover {
+  color: var(--color-text);
+}
+
+.clear-button-chip {
+  font-size: 16px;
+}
+
+.clear-button-card {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 18px;
+}
+
+.clear-button-input {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  font-size: 20px;
+  transform: translateY(-50%);
+}
+
+.reset-button {
+  display: block;
+  margin: 16px auto 24px;
+  padding: 8px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.reset-button:hover {
+  background: var(--color-surface-hover);
+}
+
+.collapse-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-size: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+/* ================================
+   Cards & chips
+   ================================ */
+
+.card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 600px;
+  margin-top: 10px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  background: var(--color-surface-chip);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-pill);
+  font-size: 0.9em;
+}
+
+.filter-chip:has(button:hover) {
+  background: var(--color-surface-chip-hover);
+}
+
+/* ================================
+   Links & result counts
+   ================================ */
+
+.search-link {
+  color: var(--color-link);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.search-link:hover {
+  color: var(--color-link-hover);
+}
+
+.table-count {
+  margin-top: 8px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.multi-value-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ================================
+   Search layouts
+   ================================ */
+
+.four-section-search {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.four-section-search-bar {
+  width: 100%;
+}
+
+.or-and-filter {
+  margin-top: 6px;
+}
+
+/* ================================
+   Data tables
+
+   The shared table look is opt-in: add "data-table" to any <table>.
+   ================================ */
+
+.data-table {
+  width: 100%;
+  margin-top: 8px;
+  border-collapse: collapse;
+  background: var(--color-surface);
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table thead tr:first-child th {
+  background: var(--color-header);
+  font-size: 18px;
+  text-align: center;
+}
+
+.data-table thead tr:nth-child(2) th {
+  background: var(--color-header);
+  font-weight: 600;
+  text-align: center;
+}
+
+.data-table td {
+  text-align: center;
+}
+
+.data-table td img {
+  display: block;
+  width: 75px;
+  height: 75px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* ================================
+   Highlights
+   ================================ */
+
+.highlight-light-green {
+  background-color: var(--highlight-light-green);
+}
+
+.highlight-green {
+  background-color: var(--highlight-green);
+}
+
+.highlight-red {
+  background-color: var(--highlight-red);
+}
+
+/* ================================
+   Recommendations
+   ================================ */
+
+.recommendations-section {
+  margin-top: 20px;
+}
+
+.recommendations-section > table:first-child thead tr:first-child th {
+  background: var(--color-header-accent);
+}
+
+.recommendations-table {
+  margin-top: 0;
+}
+
+.recommendations-table td img {
+  width: 50px;
+  height: 50px;
+}
+
+.favorite-categories {
+  margin-top: 32px;
+}
+
+.favorite-category-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.favorite-category-card {
+  padding: 6px 12px;
+  background: var(--color-surface-chip);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+/* ================================
+   Pokémon Compatibility
+   ================================ */
+
+.pokemon-autocomplete {
+  width: 400px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.pokemon-autocomplete-input {
+  font-size: 16px;
+}
+
+.potential-roommates-title {
+  margin-top: 40px;
+}
+
+.pokemon-search-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 250px;
+  margin: 8px auto 0;
+}
+
+.pokemon-search-options label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* ================================
+   Comfort Optimizer
+   ================================ */
+
+.roommate-pokemon-card {
+  width: 100%;
+  min-width: 180px;
+  max-width: 240px;
+  margin: 16px auto 0;
+  padding: 12px;
+  font-size: 0.8em;
+}
+
+.roommate-pokemon-name {
+  margin: 0 0 10px;
+  font-size: 1.3em;
+  font-weight: 600;
+}
+
+.roommate-pokemon-habitat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.roommate-pokemon-habitat .filter-chip {
+  margin: 0;
+}
+
+.roommate-pokemon-favorites-title {
+  margin: 12px 0 6px;
+  font-weight: 600;
+}
+
+.roommate-pokemon-favorites {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ================================
+   Tenant Search
+   ================================ */
+
+.tenant-items {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px auto;
+}
+
+.tenant-item-card {
+  width: 160px;
+  padding: 12px;
+}
+
+.tenant-item-card img {
+  display: block;
+  width: 75px;
+  height: 75px;
+  margin: 0 auto 8px;
+  object-fit: contain;
+}
+
+.tenant-item-card p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.tenant-item-card p.tenant-item-card-tag {
+  font-weight: normal;
+}
+
+.tenant-results-table td:first-child img {
+  margin-bottom: 6px;
+}
